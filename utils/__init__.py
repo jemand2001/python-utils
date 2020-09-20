@@ -2,6 +2,9 @@ from inspect import signature
 from functools import wraps
 
 
+__all__ = ['strict']
+
+
 def strict(f):
     sig = signature(f)
     @wraps(f)
