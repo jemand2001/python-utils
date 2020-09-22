@@ -1,8 +1,13 @@
-from inspect import signature
+from inspect import signature, Parameter
 from functools import wraps
 
 
-__all__ = ['strict']
+__all__ = ['strict', 'all_args']
+EMPTY = Parameter.empty
+
+
+def all_args(*args, **kwargs):
+    return args + tuple(kwargs.values())
 
 
 def strict(f):
