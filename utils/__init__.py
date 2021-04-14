@@ -1,1 +1,1 @@
-from .decorators import (all_args, strict, overload)
+from .decorators import (strict, overload)

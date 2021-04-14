@@ -1,2 +1,2 @@
-from .strict import (all_args, strict)
+from .strict import (strict)
 from .overload import (overload)
