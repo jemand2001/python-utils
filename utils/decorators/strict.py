@@ -2,7 +2,7 @@ from inspect import signature, Parameter
 from functools import wraps
 from typing import Any
 
-__all__ = ['strict']
+__all__ = ['strict', 'is_empty']
 
 EMPTY = Parameter.empty
 def is_empty(annotation):

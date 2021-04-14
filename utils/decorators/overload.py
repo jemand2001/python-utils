@@ -1,22 +1,38 @@
-from inspect import signature, Parameter
+from inspect import signature, Signature
 from collections import defaultdict
-import typing
+from functools import wraps
+from typing import Callable, MutableMapping
+from .strict import is_empty
 
 
 __all__ = ['overload']
 
 
-overloaded = defaultdict(dict)
+overloaded: MutableMapping[str, MutableMapping[Signature, Callable]] = defaultdict(dict)
 
-def overload(f: typing.Callable):
-    if any(par.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD)):
-        raise TypeError('cannot overload variable argument lists')
-    overloaded[f.__name__][signature(f)] = f
+def to_string(args, kwargs) -> str:
+    return '(' + ', '.join((', '.join(map(repr, args)), ', '.join(f'{k}={v}' for k, v in kwargs.items()))) + ')'
+
+def overload(f: Callable):
+    name = f.__qualname__
+    overloaded[name][signature(f)] = f
 
     @wraps(f)
     def wrapper(*args, **kwargs):
-        all_args = args + tuple(kwargs.values())
-        for sig, func in overloaded[f.__name__].items():
-            if len(all_args) == len(sig.parameters) and all(isinstance(arg, parameter.annotation) for parameter, arg in zip(sig.parameters.values(), all_args)):
-                return func(*args, **kwargs)
+        to_call = None
+        for sig, func in overloaded[name].items():
+            try:
+                arguments = sig.bind(*args, **kwargs)
+                if to_call is not None:
+                    raise ValueError(f'Ambiguous overload for {name}!')
+                if all(
+                        is_empty(sig.parameters[k].annotation)
+                        or isinstance(v, sig.parameters[k].annotation)
+                        for k, v in arguments.arguments.items()
+                ):
+                    to_call = func
+            except TypeError:
+                continue
+        if to_call is None:
+            raise ValueError(f'No overloads for {name} with arguments: {to_string(args, kwargs)}')
     return wrapper
