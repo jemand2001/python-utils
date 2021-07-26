@@ -1,1 +1,1 @@
-from .decorators import (strict, overload)
+from .decorators import (strict, overload, template)
