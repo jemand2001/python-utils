@@ -2,7 +2,7 @@ from inspect import signature, Parameter
 from functools import wraps
 from typing import Any
 
-from types_.is_instance import is_instance
+from utils.types_.is_instance import is_instance
 
 __all__ = ['strict', 'is_empty']
 
