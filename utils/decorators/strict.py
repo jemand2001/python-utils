@@ -24,5 +24,6 @@ def strict(f):
         if not is_empty(sig.return_annotation) and not is_instance(res, sig.return_annotation):
             raise TypeError(f"function '{f.__name__}' returned an unexpected"
                             f" value: expected: {sig.return_annotation} but was: {type(res)}")
+        return res
 
     return wrapper
