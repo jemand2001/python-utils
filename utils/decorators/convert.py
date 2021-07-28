@@ -23,14 +23,22 @@ def convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[T
 
 def convert(f):
     '''The `convert` decorator.
-    
+
     This decorator allows you to implicitly convert arguments to a function.
     It treats the parameter annotations as converters, if they're callable;
     otherwise it just passes the parameter through.
-    
+
     # variadic arguments
     If the decorator finds a variadic parameter with an annotation,
     it converts all values bound to that parameter using the annotation
+
+    # converters
+    A converter in this context is a callable that takes one positional argument and returns a value;
+    for example, `int` takes a string and returns an integer, or `str.split`
+    takes a string and returns a list of strings.
+
+    If a converter can't run with exactly one argument, it raises a `TypeError` on call.
+
 
     Example:
     ```py
