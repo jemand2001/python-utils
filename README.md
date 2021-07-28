@@ -11,6 +11,7 @@ Currently I have some decorators, some things to do with types, and a cache modu
 - `overload` allows you to specify different implementations of a function based on the types given to it
 - `strict` allows you to make a function strict, as described above
 - `template` allows you to make a "class template", as seen in C++ (except of course, everything in python happens at runtime, including type creation)
+- `convert` allows you to convert any or all arguments to a function using converter function annotations
 
 ### types
 - `NaturalNumber` and `StrictNaturalNumber`
