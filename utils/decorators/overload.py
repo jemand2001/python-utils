@@ -14,6 +14,29 @@ def to_string(args, kwargs) -> str:
     return '(' + ', '.join((', '.join(map(repr, args)), ', '.join(f'{k}={v}' for k, v in kwargs.items()))) + ')'
 
 def overload(f: Callable):
+    '''The overload decorator
+    
+    This decorator allows you to write separate implementations for a function based on the arguments provided.
+    To use it, just annotate your function's implementations with the types they expect.
+
+    Keep in mind that all implementations need to be decorated with `@overload` to be considered.
+    If there are multiple implementations for the same signature and annotations, only the last one is considered.
+
+    Example:
+    ```py
+    @overload
+    def f(x: int):
+        print('x is an int')
+    
+    @overload
+    def f(x: str):
+        print('x is a string')
+    
+    f(12)  # prints "x is an int"
+    f('test')  # prints "x is a string"
+    f(1.2)  # raises a TypeError('No overloads for f with arguments: (1.2, )')
+    ```
+    '''
     name = f.__qualname__
     overloaded[name][signature(f)] = f
 
