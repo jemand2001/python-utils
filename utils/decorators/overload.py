@@ -23,14 +23,13 @@ def overload(f: Callable):
         for sig, func in overloaded[name].items():
             try:
                 arguments = sig.bind(*args, **kwargs)
-                if to_call is not None:
-                    raise ValueError(f'Ambiguous overload for {name}!')
                 if all(
                         is_empty(sig.parameters[k].annotation)
                         or isinstance(v, sig.parameters[k].annotation)
                         for k, v in arguments.arguments.items()
                 ):
                     to_call = func
+                    return to_call(*args, **kwargs)
             except TypeError:
                 continue
         if to_call is None:
