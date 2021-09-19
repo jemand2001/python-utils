@@ -9,12 +9,12 @@ __all__ = ['convert']
 T = TypeVar('T')
 
 
-def convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[T, Tuple[T]]:
+def _convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[T, Tuple[T]]:
     # print(param.annotation)
     if isinstance(param.annotation, Callable) and param.annotation != Parameter.empty:
         func = param.annotation
     else:
-        func = lambda x: x
+        def func(x): return x
     # print(func)
     if param.kind == Parameter.VAR_POSITIONAL:
         return (*map(func, bound.arguments[name]),)
@@ -55,14 +55,15 @@ def convert(f):
     @wraps(f, [i for i in WRAPPER_ASSIGNMENTS if i != '__annotations__'])
     def wrapper(*args, **kwargs):
         bound = sig.bind(*args, **kwargs)
-        converted_args = tuple(convert_param(k, bound, v) for k, v in sig.parameters.items() if v.kind == Parameter.POSITIONAL_ONLY)
+        converted_args = tuple(_convert_param(k, bound, v) for k, v in sig.parameters.items(
+        ) if v.kind == Parameter.POSITIONAL_ONLY)
         var_keyword = {}
         for name, p in sig.parameters.items():
             if p.kind == Parameter.VAR_KEYWORD:
-                var_keyword = convert_param(name, bound, p)
+                var_keyword = _convert_param(name, bound, p)
                 break
         converted_kwargs = {
-            k: convert_param(k, bound, v)
+            k: _convert_param(k, bound, v)
             for k, v in sig.parameters.items()
             if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
         } | var_keyword
