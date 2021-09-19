@@ -3,6 +3,9 @@ from typing import Callable, TypeVar, Tuple, Union
 from functools import wraps, WRAPPER_ASSIGNMENTS
 
 
+__all__ = ['convert']
+
+
 T = TypeVar('T')
 
 
