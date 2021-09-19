@@ -42,12 +42,18 @@ def convert(f):
 
     If a converter can't run with exactly one argument, it raises a `TypeError` on call.
 
+    If a return annotation is given and callable, and the return value of the wrapped function is a tuple,
+    the annotation will be called with the elements of the return value.
 
     Example:
     ```py
     @convert
     def f(x: int):
         print(type(x))  # always int, if the value can be converted
+    
+    @convert
+    def g(x: int) -> isinstance:  # x will be converted to int
+        return x, int  # this calls `isinstance(x, int)` (always returns True)
     ```
     '''
     sig = signature(f)
@@ -68,7 +74,10 @@ def convert(f):
             if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
         } | var_keyword
         result = f(*converted_args, **converted_kwargs)
+
         if isinstance(sig.return_annotation, Callable) and sig.return_annotation != Signature.empty:
+            if isinstance(result, tuple):
+                return sig.return_annotation(*result)
             return sig.return_annotation(result)
         return result
     return wrapper
