@@ -37,7 +37,7 @@ def overload(f: Callable):
     f(1.2)  # raises a TypeError('No overloads for f with arguments: (1.2, )')
     ```
     '''
-    name = f.__qualname__
+    name = f'{f.__module__}.{f.__qualname__}'
     overloaded[name][signature(f)] = f
 
     @wraps(f)
