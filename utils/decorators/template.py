@@ -22,12 +22,11 @@ def template(*args: str):
     print(example.f())  # prints 12
     ```
     """
-    def decorator(cls: Type) -> Callable[..., Type[T]]:
+    def decorator(cls: Type) -> Callable[..., type]:
         @lru_cache(None)
         def wrapper(**kwargs):
             masked = {k: v for k, v in kwargs.items() if k in args}
-            name = f'{cls.__qualname__}(' + ', '.join(f'{k}={v}' for k,
-                                                      v in masked.items()) + ')'
+            name = f'{cls.__qualname__}(' + ', '.join(f'{k}={v}' for k, v in masked.items()) + ')'
             meta = type(cls)
             actual = meta(name, tuple(cls.mro())[1:], cls.__dict__ | masked)
             return actual

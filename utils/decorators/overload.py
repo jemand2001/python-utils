@@ -2,6 +2,7 @@ from inspect import signature, Signature
 from collections import defaultdict
 from functools import wraps
 from typing import Callable, MutableMapping
+from types import FunctionType
 from .strict import is_empty
 
 
@@ -13,9 +14,9 @@ overloaded: MutableMapping[str, MutableMapping[Signature, Callable]] = defaultdi
 def to_string(args, kwargs) -> str:
     return '(' + ', '.join((', '.join(map(repr, args)), ', '.join(f'{k}={v}' for k, v in kwargs.items()))) + ')'
 
-def overload(f: Callable):
-    '''The overload decorator
-    
+def overload(f: FunctionType):
+    """The overload decorator
+
     This decorator allows you to write separate implementations for a function based on the arguments provided.
     To use it, just annotate your function's implementations with the types they expect.
 
@@ -27,16 +28,16 @@ def overload(f: Callable):
     @overload
     def f(x: int):
         print('x is an int')
-    
+
     @overload
     def f(x: str):
         print('x is a string')
-    
+
     f(12)  # prints "x is an int"
     f('test')  # prints "x is a string"
     f(1.2)  # raises a TypeError('No overloads for f with arguments: (1.2, )')
     ```
-    '''
+    """
     name = f'{f.__module__}.{f.__qualname__}'
     overloaded[name][signature(f)] = f
 

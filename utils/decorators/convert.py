@@ -10,22 +10,20 @@ T = TypeVar('T')
 
 
 def _convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[T, Tuple[T]]:
-    # print(param.annotation)
     if isinstance(param.annotation, Callable) and param.annotation != Parameter.empty:
         func = param.annotation
     else:
         def func(x): return x
-    # print(func)
     if param.kind == Parameter.VAR_POSITIONAL:
-        return (*map(func, bound.arguments[name]),)
+        return *map(func, bound.arguments[name]),
     elif param.kind == Parameter.VAR_KEYWORD:
         return {k: func(v) for k, v in bound.arguments[name].items()}
     else:
         return func(bound.arguments[name])
 
 
-def convert(f):
-    '''The `convert` decorator.
+def convert(f: Callable):
+    """The `convert` decorator.
 
     This decorator allows you to implicitly convert arguments to a function.
     It treats the parameter annotations as converters, if they're callable;
@@ -50,12 +48,12 @@ def convert(f):
     @convert
     def f(x: int):
         print(type(x))  # always int, if the value can be converted
-    
+
     @convert
     def g(x: int) -> isinstance:  # x will be converted to int
         return x, int  # this calls `isinstance(x, int)` (always returns True)
     ```
-    '''
+    """
     sig = signature(f)
 
     @wraps(f, [i for i in WRAPPER_ASSIGNMENTS if i != '__annotations__'])
@@ -69,10 +67,10 @@ def convert(f):
                 var_keyword = _convert_param(name, bound, p)
                 break
         converted_kwargs = {
-            k: _convert_param(k, bound, v)
-            for k, v in sig.parameters.items()
-            if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
-        } | var_keyword
+                               k: _convert_param(k, bound, v)
+                               for k, v in sig.parameters.items()
+                               if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
+                           } | var_keyword
         result = f(*converted_args, **converted_kwargs)
 
         if isinstance(sig.return_annotation, Callable) and sig.return_annotation != Signature.empty:
@@ -81,4 +79,3 @@ def convert(f):
             return sig.return_annotation(result)
         return result
     return wrapper
-
