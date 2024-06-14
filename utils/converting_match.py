@@ -1,8 +1,8 @@
-"""
-this module provides a way to bind a match case to a value derived from the one
+"""!
+This module provides a way to bind a match case to a value derived from the one
 that is being matched (I know this is a terrible description but bear with me).
 
-example:
+## Example:
 ```py
 from utils.converting_match import Converting, pre_made_converters, check_for
 
@@ -26,19 +26,22 @@ __all__ = ('Converting', 'check_for', 'pre_made_converters')
 
 
 class _ConverterMeta(type):
+    """!
+    The converter metaclass. Do not use directly.
+    """
     __converted__ = None
     __original__ = None
 
 
 def Converting(obj):
-    """
-    A wrapper for an object to be used with match cases involving :link:`check_for`.
+    """!
+    A wrapper for an object to be used with match cases involving ::check_for.
 
     For ideal results, type(obj) should implement something akin to a "copy constructor",
     that is, `type(obj)(obj) is obj` should be True (many built-in types do this, so it already works with them).
 
-    :param obj: the object to be wrapped
-    :return: a wrapper object
+    @param obj the object to be wrapped
+    @return a wrapper object
     """
     class Conv(type(obj), metaclass=_ConverterMeta):
         def __init__(self, obj):
@@ -48,11 +51,11 @@ def Converting(obj):
 
 
 def check_for(converter):
-    """
-    A match case for :link:`Converting`.
+    """!
+    A match case for ::Converting.
 
-    :param converter: a callable object that converts the wrapped object to another object
-    :return: a match case
+    @param converter a callable object that converts the wrapped object to another object
+    @return a match case
     """
     class Meta(type):
         __conv__ = staticmethod(converter)
@@ -73,9 +76,18 @@ def check_for(converter):
 
 
 class pre_made_converters:
+    """!
+    Contains some converters
+    """
+    ## A converter from digits
     Digits = check_for(int)
+    ## A converter from hexadecimal
     Hexadecimal = check_for(partial(int, base=16))
+    ## A converter from binary
     Binary = check_for(partial(int, base=2))
+    ## A converter from octal
     Octal = check_for(partial(int, base=8))
+    ## A converter from float
     Float = check_for(float)
+    ## A converter from complex
     Complex = check_for(complex)

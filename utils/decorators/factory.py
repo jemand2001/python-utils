@@ -1,14 +1,18 @@
-from functools import wraps, partial
-from inspect import signature, Signature, Parameter
+"""!
+This module contains a factory decorator.
+"""
+from functools import wraps
+from inspect import signature, Parameter
 from typing import Callable, Any
 
 __all__ = "param_factory"
 
 
 def param_factory(name: str, factory: Callable[[], Any]):
-    """Add a factory for a parameter of the decorated function
+    """!
+    Add a factory for a parameter of the decorated function
 
-    Example usage:
+    ## Example usage:
     ```py
     @param_factory('test', lambda: 5)
     def mul2(test: int) -> int:
@@ -18,8 +22,8 @@ def param_factory(name: str, factory: Callable[[], Any]):
     print(mul2())    # -> 10
     ```
 
-    :param name: the name of the parameter to add a factory to
-    :param factory: the factory to produce values for the parameter
+    @param name the name of the parameter to add a factory to
+    @param factory the factory to produce values for the parameter
     """
 
     def decorator(f: Callable):

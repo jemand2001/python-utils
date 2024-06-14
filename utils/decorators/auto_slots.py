@@ -1,3 +1,6 @@
+"""!
+This module contains a class decorator that adds `__slots__` to the decorated class.
+"""
 from dis import Bytecode
 from inspect import signature
 
@@ -6,14 +9,15 @@ __all__ = ['auto_slots']
 
 
 def auto_slots(cls: type) -> type:
-    """The auto_slots decorator.
+    """!
+    The auto_slots decorator.
     
     This class decorator will automatically generate a `__slots__` attribute ("make your class slotted")
     based on the attribute assignments to `self` in the decorated class' `__init__` method.
     
     If your class already uses slots, this decorator has no effect. It is intended if you want to benefit
     from making your classes slotted, but don't want to go through and figure out which slots you need;
-    You can just put `@auto_slots` in front of your class, and now your class is slotted
+    You can just put `@auto_slots` in front of your class, and now your class is slotted.
     
     ## Example:
 
@@ -37,6 +41,7 @@ def auto_slots(cls: type) -> type:
         def set_x(self, val):
             self.x = val  # no error: C already has a __slots__ attribute
     ```
+    @param cls The decorated class
     """
     if hasattr(cls, '__slots__'):
         return cls

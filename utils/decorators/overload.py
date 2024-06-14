@@ -1,3 +1,6 @@
+"""!
+Adds the ability to overload functions
+"""
 from inspect import signature, Signature
 from collections import defaultdict
 from functools import wraps
@@ -6,16 +9,32 @@ from types import FunctionType
 from .strict import is_empty
 
 
-__all__ = ['overload']
+__all__ = ["overload"]
 
 
 overloaded: MutableMapping[str, MutableMapping[Signature, Callable]] = defaultdict(dict)
 
+
+## @cond
 def to_string(args, kwargs) -> str:
-    return '(' + ', '.join((', '.join(map(repr, args)), ', '.join(f'{k}={v}' for k, v in kwargs.items()))) + ')'
+    return (
+        "("
+        + ", ".join(
+            (
+                ", ".join(map(repr, args)),
+                ", ".join(f"{k}={v}" for k, v in kwargs.items()),
+            )
+        )
+        + ")"
+    )
+
+
+## @endcond
+
 
 def overload(f: FunctionType):
-    """The overload decorator
+    """!
+    The overload decorator
 
     This decorator allows you to write separate implementations for a function based on the arguments provided.
     To use it, just annotate your function's implementations with the types they expect.
@@ -23,7 +42,7 @@ def overload(f: FunctionType):
     Keep in mind that all implementations need to be decorated with `@overload` to be considered.
     If there are multiple implementations for the same signature and annotations, only the last one is considered.
 
-    Example:
+    ## Example:
     ```py
     @overload
     def f(x: int):
@@ -37,8 +56,10 @@ def overload(f: FunctionType):
     f('test')  # prints "x is a string"
     f(1.2)  # raises a TypeError('No overloads for f with arguments: (1.2, )')
     ```
+
+    @param f the overloaded function
     """
-    name = f'{f.__module__}.{f.__qualname__}'
+    name = f"{f.__module__}.{f.__qualname__}"
     overloaded[name][signature(f)] = f
 
     @wraps(f)
@@ -48,14 +69,17 @@ def overload(f: FunctionType):
             try:
                 arguments = sig.bind(*args, **kwargs)
                 if all(
-                        is_empty(sig.parameters[k].annotation)
-                        or isinstance(v, sig.parameters[k].annotation)
-                        for k, v in arguments.arguments.items()
+                    is_empty(sig.parameters[k].annotation)
+                    or isinstance(v, sig.parameters[k].annotation)
+                    for k, v in arguments.arguments.items()
                 ):
                     to_call = func
                     return to_call(*args, **kwargs)
             except TypeError:
                 continue
         if to_call is None:
-            raise ValueError(f'No overloads for {name} with arguments: {to_string(args, kwargs)}')
+            raise ValueError(
+                f"No overloads for {name} with arguments: {to_string(args, kwargs)}"
+            )
+
     return wrapper

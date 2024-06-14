@@ -1,21 +1,30 @@
+"""!
+Contains a decorator that allows you to convert parameters to the decorated function using converter functions.
+"""
 from inspect import Signature, signature, Parameter, BoundArguments
 from typing import Callable, TypeVar, Tuple, Union
 from functools import wraps, WRAPPER_ASSIGNMENTS
 
 
-__all__ = ['convert']
+__all__ = ["convert"]
 
 
-T = TypeVar('T')
+## @cond
+T = TypeVar("T")
+## @endcond
 
-
-def _convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[T, Tuple[T]]:
+def _convert_param(
+    name: str, bound: BoundArguments, param: Parameter
+) -> Union[T, Tuple[T]]:
     if isinstance(param.annotation, Callable) and param.annotation != Parameter.empty:
         func = param.annotation
     else:
-        def func(x): return x
+
+        def func(x):
+            return x
+
     if param.kind == Parameter.VAR_POSITIONAL:
-        return *map(func, bound.arguments[name]),
+        return (*map(func, bound.arguments[name]),)
     elif param.kind == Parameter.VAR_KEYWORD:
         return {k: func(v) for k, v in bound.arguments[name].items()}
     else:
@@ -23,17 +32,18 @@ def _convert_param(name: str, bound: BoundArguments, param: Parameter) -> Union[
 
 
 def convert(f: Callable):
-    """The `convert` decorator.
+    """!
+    The convert decorator.
 
     This decorator allows you to implicitly convert arguments to a function.
     It treats the parameter annotations as converters, if they're callable;
     otherwise it just passes the parameter through.
 
-    # variadic arguments
+    ## variadic arguments
     If the decorator finds a variadic parameter with an annotation,
     it converts all values bound to that parameter using the annotation
 
-    # converters
+    ## converters
     A converter in this context is a callable that takes one positional argument and returns a value;
     for example, `int` takes a string and returns an integer, or `str.split`
     takes a string and returns a list of strings.
@@ -43,7 +53,7 @@ def convert(f: Callable):
     If a return annotation is given and callable, and the return value of the wrapped function is a tuple,
     the annotation will be called with the elements of the return value.
 
-    Example:
+    ## Example:
     ```py
     @convert
     def f(x: int):
@@ -56,26 +66,33 @@ def convert(f: Callable):
     """
     sig = signature(f)
 
-    @wraps(f, [i for i in WRAPPER_ASSIGNMENTS if i != '__annotations__'])
+    @wraps(f, [i for i in WRAPPER_ASSIGNMENTS if i != "__annotations__"])
     def wrapper(*args, **kwargs):
         bound = sig.bind(*args, **kwargs)
-        converted_args = tuple(_convert_param(k, bound, v) for k, v in sig.parameters.items(
-        ) if v.kind == Parameter.POSITIONAL_ONLY)
+        converted_args = tuple(
+            _convert_param(k, bound, v)
+            for k, v in sig.parameters.items()
+            if v.kind == Parameter.POSITIONAL_ONLY
+        )
         var_keyword = {}
         for name, p in sig.parameters.items():
             if p.kind == Parameter.VAR_KEYWORD:
                 var_keyword = _convert_param(name, bound, p)
                 break
         converted_kwargs = {
-                               k: _convert_param(k, bound, v)
-                               for k, v in sig.parameters.items()
-                               if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
-                           } | var_keyword
+            k: _convert_param(k, bound, v)
+            for k, v in sig.parameters.items()
+            if v.kind in {Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY}
+        } | var_keyword
         result = f(*converted_args, **converted_kwargs)
 
-        if isinstance(sig.return_annotation, Callable) and sig.return_annotation != Signature.empty:
+        if (
+            isinstance(sig.return_annotation, Callable)
+            and sig.return_annotation != Signature.empty
+        ):
             if isinstance(result, tuple):
                 return sig.return_annotation(*result)
             return sig.return_annotation(result)
         return result
+
     return wrapper
