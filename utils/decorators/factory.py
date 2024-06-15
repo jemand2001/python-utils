@@ -36,7 +36,7 @@ def param_factory(name: str, factory: Callable[[], Any]):
                 "Can't add a factory for a parameter that doesn't exist without **kwargs"
             )
 
-        if sig.parameters[name].kind == Parameter.POSITIONAL_ONLY:
+        if name in sig.parameters and sig.parameters[name].kind == Parameter.POSITIONAL_ONLY:
             raise TypeError("Can't add a factory for a positional-only parameter")
 
         @wraps(f)
